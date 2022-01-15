@@ -1,42 +1,105 @@
-import React, { useState } from 'react'
+import React, { Component } from "react";
+import AccountBalance from "./AccountBalance";
+import { Link } from "react-router-dom";
 
-function Debit(){
-    const [amount, setAmount] = useState(0);
-    const [name, setName] = useState("");
-    const [debits, setDebit] = useState([
-        { amount: 200, name: "Supplies" },
-        { amount: 100, name: "Rent" },
-        { amount: 75, name: "Car Expenses" },
-    ]);
-
-    const onChangeName = (e) => { 
-        setName(e.target.value); 
+class Debit extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      debit: {
+        id: "",
+        description: "",
+        amount: "",
+        date: "",
+      },
     };
+  }
 
-    const onChangeAmount = (e) => { 
-        setAmount(parseInt(e.target.value)) 
-    };
+  handleChange = (event) => {
+    const updatedDebit = { ...this.state.debit };
+    const inputField = event.target.name;
+    const inputValue = event.target.value;
 
-    const addDebit = () => {
-        const newDebits = [...debits];
-        newDebits.push({ amount, name});
-        setDebit(newDebits);
+    updatedDebit[inputField] = inputValue;
+    if (inputField === "amount") {
+      updatedDebit.amount = Number(inputValue);
     }
+    this.setState({ debit: updatedDebit });
+  };
 
-    return(
-        <div className="debit">
-            {debits.map(((debit, key) => {
-                return(
-                    <div key={key}>
-                        {debit.name} :: {debit.amount}
-                    </div>
-                );
-            }))}
-            <input onChange={onChangeName} type="text" placeholder="name" />
-            <input onChange={onChangeAmount} type="number" placeholder="amount" />
-            <button onClick={addDebit}>Add Debit</button>
+  handleSubmit = (event) => {
+    event.preventDefault();
+    this.props.createDebit(this.state.debit);
+    this.setState({
+        debit: {
+            id: "",
+            description: "",
+            amount: "",
+            date: "",
+          }
+    });
+  };
+
+  render() {
+    return (
+      <div>
+        <div>
+          <h1>Debits Page</h1>
+          <Link to="/">
+            Back to Home
+          </Link>
         </div>
+
+        <AccountBalance accountBalance={this.props.accountBalance} debits={this.props.debitsTotal} credits={this.props.creditsTotal}/>
+
+        <div>
+          <h3>Adding a debit</h3>
+          <form onSubmit={this.handleSubmit}>
+            <label for="description">Description:</label>
+            <input
+              name="description"
+              value={this.state.debit.description}
+              onChange={this.handleChange}
+              placeholder="Enter description"
+            />
+            <label for="amount">Amount:</label>
+            <input
+              name="amount"
+              value={this.state.debit.amount}
+              onChange={this.handleChange}
+              placeholder="Enter amount"
+            />
+            <br/>
+            <button>submit</button>
+          </form>
+        </div>
+
+
+        <div>
+          <h3>History</h3>
+        </div>
+        <div>
+            <ul>
+                {this.props.debit.map((debit) => {
+                    let date = new Date(debit.date);
+
+                    return (
+                    <li>
+                        <div key={debit.id}>
+                            <div>Description: {debit.description}</div>
+                            <ul>
+                                <li>Amount: ${debit.amount}</li>
+                                <li>Date: {date.toLocaleDateString()}</li>
+                            </ul>
+                        </div>
+                    </li>
+                    );
+                })}
+            </ul>
+        </div>
+      </div>
     );
+  }
 }
 
 export default Debit;
